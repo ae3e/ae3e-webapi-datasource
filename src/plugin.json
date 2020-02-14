@@ -1,0 +1,39 @@
+{
+  "type": "datasource",
+  "name": "Web API",
+  "id": "webapi-datasource",
+
+  "metrics": true,
+
+  "info": {
+    "description": "Datasource plugin for any Web API",
+    "author": {
+      "name": "ae3e"
+    },
+    "keywords": ["github"],
+    "logos": {
+      "small": "img/WebAPI.svg",
+      "large": "img/WebAPI.svg"
+    },
+    "links": [
+      {
+        "name": "Project site",
+        "url": "https://github.com/ae3e/webapi-datasource"
+      },
+      {
+        "name": "MIT License",
+        "url": "https://github.com/"
+      }
+    ],
+    "screenshots": [],
+    "version": "%VERSION%",
+    "updated": "%TODAY%"
+  },
+
+  "includes": [],
+
+  "dependencies": {
+    "grafanaVersion": "6.3.x",
+    "plugins": []
+  }
+}
