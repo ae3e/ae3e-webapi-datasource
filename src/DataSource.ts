@@ -37,117 +37,136 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
   async doSingleQuery(options: any): Promise<DataQueryResponse> {
     console.log(options);
     console.log('VARIABLES');
-    //console.log(this.templateSrv.replace('tes fg $distance fdgdfd g'))
-    console.log(this.templateSrv.variables);
+    //console.log(this.templateSrv.replace('$__interval', options.scopedVars));
+    //console.log(this.templateSrv.variables);
+    
+    //If global script for Handlebars exists
+    if (this.instanceSettings.jsonData.script && this.instanceSettings.jsonData.script!='') {
+      let func = new Function('text,options', this.instanceSettings.jsonData.script) as any;
 
-    const req = options.targets[0].request.query as any;
-    req.start_absolute = req.start_absolute === undefined ? options.range.from.unix() * 1000 : req.start_absolute;
-    req.end_absolute = req.end_absolute === undefined ? options.range.to.unix() * 1000 : req.end_absolute;
-    //req.start_absolute = options.range.from.unix()*1000;
-    //req.end_absolute = options.range.to.unix()*1000;
+      Handlebars.registerHelper('function', (text, opts) => {
 
-    const value = parseFloat(options.interval).toString();
-    const unit = options.interval.replace(value, '');
-    const UNITS = {
-      ms: 'MILLISECONDS',
-      s: 'SECONDS',
-      m: 'MINUTES',
-      h: 'HOURS',
-      d: 'DAYS',
-      w: 'WEEKS',
-      M: 'MONTHS',
-      y: 'YEARS',
-    } as any;
-    const template = Handlebars.compile(JSON.stringify(req));
+        let result = func(text,opts);
 
-    Handlebars.registerHelper('function', (text, options) => {
-      let result;
-      switch (options.hash['function']) {
-        case 'distanceTags':
-          if (text && text.indexOf('-') !== -1) {
-            const bounds = text.split('-').map((val: string) => parseInt(val, 10));
-            /*var diff = bounds[1]-bounds[0]
-              var step = Math.ceil(diff/20/10)*20
-              console.log(step)*/
-            const data = [];
-            for (let i = bounds[0]; i < bounds[1]; i = i + 10) {
-              if (i === bounds[0]) {
-                data.push(i + '"');
+        /*switch (options.hash['function']) {
+          case 'distanceTags':
+            if (text && text.indexOf('-') !== -1) {
+              const bounds = text.split('-').map((val: string) => parseInt(val, 10));
+
+              const data = [];
+              for (let i = bounds[0]; i < bounds[1]; i = i + 10) {
+                if (i === bounds[0]) {
+                  data.push(i + '"');
+                }
+                if (i === bounds[1] - 10) {
+                  data.push('"' + i);
+                }
+                if (i !== bounds[0] && i !== bounds[1] - 10) {
+                  data.push('"' + i + '"');
+                }
               }
-              if (i === bounds[1] - 10) {
-                data.push('"' + i);
-              }
-              if (i !== bounds[0] && i !== bounds[1] - 10) {
-                data.push('"' + i + '"');
-              }
+              const mystring = data.join(',');
+              console.log(mystring);
+              result = data.join(',');
+              //return '200","210'
             }
-            const mystring = data.join(',');
-            console.log(mystring);
-            result = data.join(',');
-            //return '200","210'
-          }
-          break;
-        case 'timeUnit':
-          result = UNITS[text.replace(parseFloat(text).toString(), '')];
-          break;
-        case 'timeValue':
-          result = parseFloat(text).toString();
-          break;
-        default:
-          const f = new Function('data', options.hash['function']);
-          result = f(text);
-      }
+            break;
+          case 'timeUnit':
+            const UNITS = {
+              ms: 'MILLISECONDS',
+              s: 'SECONDS',
+              m: 'MINUTES',
+              h: 'HOURS',
+              d: 'DAYS',
+              w: 'WEEKS',
+              M: 'MONTHS',
+              y: 'YEARS',
+            } as any;
+            result = UNITS[text.replace(parseFloat(text).toString(), '')];
+            break;
+          case 'timeValue':
+            result = parseFloat(text).toString();
+            break;
+          default:
+            const f = new Function('data', options.hash['function']);
+            result = f(text);
+        }*/
 
-      return result;
-    });
+        return result;
+      });
 
-    const context = {
-      unit: UNITS[unit],
-      value: value,
-      distance: this.templateSrv.replace('$distance'),
-      section: this.templateSrv.replace('$section'),
-      myinterval: this.templateSrv.replace('$myinterval'),
-    };
-    let result = template(context);
-    result = this.templateSrv.replace(result, options.scopedVars);
-    //console.log(result);
-    const opts = {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: result,
-    };
-    // Add Authorization header
-    if (this.instanceSettings.jsonData.authHeader) {
-      (opts.headers as any).Authorization = this.instanceSettings.jsonData.authHeader;
     }
 
-    const res = await fetch(options.targets[0].request.url, opts);
-    const json = await res.json();
-    /*if (query.jsonata) {
-      json = jsonata(query.jsonata).evaluate(json);
-    }*/
+    const context = {
+      interval: this.templateSrv.replace('$__interval', options.scopedVars),
+    } as any;
+    this.templateSrv.variables.forEach((elt: any)=>{
+      context[elt.name]=elt.current.text;
+    })
 
-    //console.log(json);
-    const json2: any = [];
-    json.queries.forEach((obj: any) => {
-      const arr: any = [];
-      obj.results.forEach((obj2: any) => {
-        obj2.values.forEach((val: any) => {
-          arr.push([val[1], val[0]]);
-        });
-      });
-      json2.push({
-        target: obj.results[0].name,
-        datapoints: arr,
-        //unit:"°C"
-      });
-    });
+    function replaceVariables(ctxt: any, value: string){  
+      const template = Handlebars.compile(value);
+      let res = template(context);
+      res = ctxt.templateSrv.replace(res, options.scopedVars);
+      return res;
+    }
 
-    console.log(json2);
-    const data = json2;
+    var promises: any = options.targets.map(async (target: any)=>{
+      const req = target.request.query as any;
 
+      const opts = {
+        method: target.request.method,
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      } as any;
+
+      if(target.request.method==='POST'){
+        opts.body = replaceVariables(this,JSON.stringify(req));
+      }
+
+      let url = replaceVariables(this,target.request.url);
+      
+      const res = await fetch(url, opts);
+      const json = await res.json();
+
+      let processed: any[] = [];
+
+      try {
+        if (target.request.script && target.request.script !== '') {
+          var f = new Function('data,variables', target.request.script);
+          processed = f(json);
+        }else{
+          processed = json;
+        }
+      } catch (e) {
+        console.log(e);
+      }
+
+      return processed;
+    })
+
+    let results = await Promise.all(promises)
+    let data  = results.map((elt:any)=>elt[0]);
+    console.log(data);
+
+    return {data};
+    /*  const json = await res.json();
+
+      let data: any[] = [];
+
+      try {
+        if (target.request.script && target.request.script !== '') {
+          var f = new Function('data,variables', target.request.script);
+          data = f(json);
+        }else{
+          data = json;
+        }
+      } catch (e) {
+        console.log(e);
+      }
+    })*/
+    
     // Make sure it looks like DataFrame
     /*if (isDataFrame(json)) {
       return json as DataFrame;
@@ -155,7 +174,8 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
     let dataframe = toDataFrame(json)
     console.log(dataframe)
     return dataframe;*/
-    return { data };
+    //console.log(data)
+    //return { data };
   }
 
   testDatasource() {

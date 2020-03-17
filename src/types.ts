@@ -20,6 +20,8 @@ import { DataQuery, DataSourceJsonData } from '@grafana/data';
 export interface WebQuery {
   query: string;
   url: string;
+  method: string;
+  script: string;
   variables?: any;
 }
 
@@ -32,6 +34,7 @@ export interface MyQuery extends DataQuery {
  * These are options configured for each DataSource instance
  */
 export interface MyDataSourceOptions extends DataSourceJsonData {
+  script?: string;
   authHeader?: string;
 }
 

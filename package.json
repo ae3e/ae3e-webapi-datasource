@@ -11,7 +11,7 @@
   "license": "MIT",
   "dependencies": {
     "handlebars": "^4.1.2",
-    "react-ace": "^7.0.2"
+    "react-ace": "6.2.2"
   },
   "devDependencies": {
     "@grafana/data": "latest",

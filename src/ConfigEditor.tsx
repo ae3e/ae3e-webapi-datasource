@@ -5,13 +5,13 @@ import React, { PureComponent, ChangeEvent } from 'react';
 import { MyDataSourceOptions } from './types';
 
 import { DataSourcePluginOptionsEditorProps } from '@grafana/data';
-import { FormField } from '@grafana/ui';
+import { FormField, FormLabel } from '@grafana/ui';
 
 interface Props extends DataSourcePluginOptionsEditorProps<MyDataSourceOptions> {}
 
 interface State {}
 
-export class GraphQLConfigEditor extends PureComponent<Props, State> {
+export class ConfigEditor extends PureComponent<Props, State> {
   state = {};
 
   componentDidMount() {}
@@ -25,25 +25,25 @@ export class GraphQLConfigEditor extends PureComponent<Props, State> {
     });
   };
 
-  onAuthChange = (event: ChangeEvent<HTMLInputElement>) => {
+  onScriptChange = (event: ChangeEvent<HTMLTextAreaElement>) => {
     const { onOptionsChange, options } = this.props;
     const jsonData = {
       ...options.jsonData,
-      authHeader: event.target.value,
+      script: event.target.value,
     };
     onOptionsChange({ ...options, jsonData });
   };
 
   render() {
     const { options } = this.props;
-    const { jsonData } = options;
+    //const { jsonData } = options;
 
     return (
       <div className="gf-form-group">
         <div className="gf-form">
           <FormField
             label="URL"
-            labelWidth={6}
+            labelWidth={10}
             onChange={this.onURLChange}
             value={options.url}
             tooltip={'NOTE: hit directly via fetch, not proxy'}
@@ -51,7 +51,12 @@ export class GraphQLConfigEditor extends PureComponent<Props, State> {
           />
         </div>
         <div className="gf-form">
-          <FormField label="Prefix" labelWidth={6} onChange={this.onAuthChange} value={jsonData.authHeader} placeholder="Authentication Header" />
+          <FormLabel className="width-10" tooltip="USed for Handlebars">
+            Global function
+          </FormLabel>
+          <textarea onBlur={this.onScriptChange} className="gf-form-input" rows={15}>
+            {options.jsonData.script}
+          </textarea>
         </div>
       </div>
     );
