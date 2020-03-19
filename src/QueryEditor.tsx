@@ -7,6 +7,13 @@ import { FormField, FormLabel, Select } from '@grafana/ui';
 
 import { QueryEditorProps } from '@grafana/data';
 
+import AceEditor from 'react-ace';
+
+import 'brace/mode/javascript';
+import 'brace/theme/tomorrow';
+import 'brace/theme/tomorrow_night';
+import 'brace/theme/github';
+
 type Props = QueryEditorProps<DataSource, MyQuery, MyDataSourceOptions>;
 
 interface State {}
@@ -32,22 +39,22 @@ export class QueryEditor extends PureComponent<Props, State> {
     onChange({ ...query, request });
   }; 
 
-  onQueryChange = (event: ChangeEvent<HTMLTextAreaElement>) => {
+  onBodyChange = (evt: any, editor? : any) => {
     console.log('Query change!');
     const { onChange, query } = this.props;
     const request = {
       ...query.request,
-      query: JSON.parse(event.target.value),
+      query: JSON.parse(editor.getValue()),
     };
     onChange({ ...query, request });
   };
 
-  onScriptChange = (event: ChangeEvent<HTMLTextAreaElement>) => {
+  onScriptChange = (evt: any, editor? : any) => {
     console.log('Script change!');
     const { onChange, query } = this.props;
     const request = {
       ...query.request,
-      script: event.target.value,
+      script: editor.getValue(),
     };
     onChange({ ...query, request });
   };
@@ -89,17 +96,29 @@ export class QueryEditor extends PureComponent<Props, State> {
           <FormLabel className="width-12" tooltip="Set JSON body">
             Body
           </FormLabel>
-          <textarea onBlur={this.onQueryChange} className="gf-form-input" rows={15}>
-            {JSON.stringify(request.query, null, 2)}
-          </textarea>
+          <AceEditor
+            mode="javascript"
+            theme="tomorrow_night"
+            name="dashboard_script"
+            height="300px"
+            width="100%"
+            value={JSON.stringify(request.query, null, 2)}
+            onBlur={this.onBodyChange}
+          />
         </div>}
         <div className="gf-form" style={{ display: 'block', width: '100%' }}>
           <FormLabel className="width-12" tooltip="Set script to return formatted data as described in Grafana's documentation">
             Script
           </FormLabel>
-          <textarea onBlur={this.onScriptChange} className="gf-form-input" rows={15}>
-            {request.script}
-          </textarea>
+          <AceEditor
+            mode="javascript"
+            theme="tomorrow_night"
+            name="dashboard_script"
+            height="300px"
+            width="100%"
+            value={request.script}
+            onBlur={this.onScriptChange}
+          />
         </div>
       </div>
     );
