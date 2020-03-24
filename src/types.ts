@@ -18,9 +18,10 @@ export interface MyDataSourceOptions extends DataSourceJsonData {
 import { DataQuery, DataSourceJsonData } from '@grafana/data';
 
 export interface WebQuery {
-  query: string;
   url: string;
   method: string;
+  body_format: string;
+  body: string;
   script: string;
   variables?: any;
 }

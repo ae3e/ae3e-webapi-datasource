@@ -15,10 +15,10 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
   }
 
   getQueryDisplayText(query: MyQuery) {
-    if (!query.request || !query.request.query) {
+    if (!query.request || !query.request.body) {
       return 'Missing Query';
     }
-    return truncate(query.request.query, { length: 20 });
+    return truncate(query.request.body, { length: 20 });
   }
 
   query(options: DataQueryRequest<MyQuery>): Promise<DataQueryResponse> {
@@ -112,17 +112,20 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
     }
 
     var promises: any = options.targets.map(async (target: any)=>{
-      const req = target.request.query as any;
 
       const opts = {
         method: target.request.method,
         headers: {
-          'Content-Type': 'application/json',
+          'Content-Type': target.request.body_format==='raw-json'?'application/json':'application/x-www-form-urlencoded',
         }
       } as any;
 
       if(target.request.method==='POST'){
-        opts.body = replaceVariables(this,JSON.stringify(req));
+        console.log('QUERY:',target.request.body)
+        opts.body = replaceVariables(this,target.request.body_format==='raw-json'?JSON.stringify(target.request.body):target.request.body);
+        /*if(target.request.body_format==='x-www-form-urlencoded'){
+          opt.body = 
+        }*/
       }
 
       let url = replaceVariables(this,target.request.url);

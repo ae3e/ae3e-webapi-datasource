@@ -44,10 +44,20 @@ export class QueryEditor extends PureComponent<Props, State> {
     const { onChange, query } = this.props;
     const request = {
       ...query.request,
-      query: JSON.parse(editor.getValue()),
+      body: query.request.body_format==='raw-json'?JSON.parse(editor.getValue()):editor.getValue(),
     };
     onChange({ ...query, request });
   };
+
+  onBodyFormatChange = (value: any) => {
+    console.log('Body\'s format changed!');
+    const { onChange, query } = this.props;
+    const request = {
+      ...query.request,
+      body_format: value.value,
+    };
+    onChange({ ...query, request });
+  }; 
 
   onScriptChange = (evt: any, editor? : any) => {
     console.log('Script change!');
@@ -65,9 +75,10 @@ export class QueryEditor extends PureComponent<Props, State> {
     let { request } = query;
     if (!request) {
       request = {
-        query: '{ }',
+        body: '',
         url: '',
         method:'',
+        body_format:'',
         script:''
       };
     }
@@ -92,17 +103,29 @@ export class QueryEditor extends PureComponent<Props, State> {
             onChange={this.onMethodChange}
           />
         </div>
-        {request.method==='POST' && <div className="gf-form" style={{ display: 'block', width: '100%' }}>
-          <FormLabel className="width-12" tooltip="Set JSON body">
+        {request.method==='POST' && <div className="gf-form">
+         <FormLabel className="width-12" tooltip="Set JSON body">
             Body
           </FormLabel>
+          <Select
+            value={request.body_format?{label:request.body_format,value:request.body_format}:{label:'none',value:'none'}}
+            placeholder="Choose..."
+            options={[{ label: 'raw-json', value: 'raw-json' },
+            { label: 'x-www-form-urlencoded', value: 'x-www-form-urlencoded' },
+          ]}
+            width={16}
+            allowCustomValue={true}
+            onChange={this.onBodyFormatChange}
+          />
+        </div>}
+        {request.method==='POST' && <div className="gf-form" style={{display: 'block',width: '100%' }}>
           <AceEditor
             mode="javascript"
             theme="tomorrow_night"
             name="dashboard_script"
             height="300px"
             width="100%"
-            value={JSON.stringify(request.query, null, 2)}
+            value={request.body_format==='raw-json'?JSON.stringify(request.body,null,2):request.body}
             onBlur={this.onBodyChange}
           />
         </div>}
