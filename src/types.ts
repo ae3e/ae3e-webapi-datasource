@@ -20,8 +20,8 @@ import { DataQuery, DataSourceJsonData } from '@grafana/data';
 export interface WebQuery {
   url: string;
   method: string;
-  body_format: string;
   body: string;
+  headers:any;
   script: string;
   variables?: any;
 }

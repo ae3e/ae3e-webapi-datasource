@@ -116,21 +116,17 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
 
       const opts = {
         method: target.request.method,
-        headers: {
-          'Content-Type': target.request.body_format==='raw-json'?'application/json':'application/x-www-form-urlencoded',
-        }
+        headers: JSON.parse(target.request.headers)
       } as any;
 
       if(target.request.method==='POST'){
         console.log('QUERY:',target.request.body)
-        opts.body = replaceVariables(this,target.request.body_format==='raw-json'?JSON.stringify(target.request.body):target.request.body);
-        /*if(target.request.body_format==='x-www-form-urlencoded'){
-          opt.body = 
-        }*/
+        opts.body = replaceVariables(this,target.request.body);
       }
 
       let url = replaceVariables(this,target.request.url);
       
+      console.log(opts);
       const res = await fetch(url, opts);
       const json = await res.json();
 

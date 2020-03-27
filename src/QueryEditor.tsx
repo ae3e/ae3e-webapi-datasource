@@ -37,24 +37,24 @@ export class QueryEditor extends PureComponent<Props, State> {
       method: value.value,
     };
     onChange({ ...query, request });
-  }; 
+  };
+
+  onHeadersChange = (evt: any, editor? : any) => {
+    console.log('Headers change!');
+    const { onChange, query } = this.props;
+    const request = {
+      ...query.request,
+      headers: editor.getValue(),
+    };
+    onChange({ ...query, request });
+  };
 
   onBodyChange = (evt: any, editor? : any) => {
     console.log('Query change!');
     const { onChange, query } = this.props;
     const request = {
       ...query.request,
-      body: query.request.body_format==='raw-json'?JSON.parse(editor.getValue()):editor.getValue(),
-    };
-    onChange({ ...query, request });
-  };
-
-  onBodyFormatChange = (value: any) => {
-    console.log('Body\'s format changed!');
-    const { onChange, query } = this.props;
-    const request = {
-      ...query.request,
-      body_format: value.value,
+      body: editor.getValue(),
     };
     onChange({ ...query, request });
   }; 
@@ -76,9 +76,9 @@ export class QueryEditor extends PureComponent<Props, State> {
     if (!request) {
       request = {
         body: '',
+        headers:'',
         url: '',
         method:'',
-        body_format:'',
         script:''
       };
     }
@@ -103,20 +103,24 @@ export class QueryEditor extends PureComponent<Props, State> {
             onChange={this.onMethodChange}
           />
         </div>
+        <div className="gf-form" style={{ display: 'block', width: '100%' }}>
+          <FormLabel className="width-12" tooltip="Set headers of HTTP request">
+            Headers
+          </FormLabel>
+          <AceEditor
+            mode="javascript"
+            theme="tomorrow_night"
+            name="dashboard_script"
+            height="150px"
+            width="100%"
+            value={request.headers}
+            onBlur={this.onHeadersChange}
+          />
+        </div>
         {request.method==='POST' && <div className="gf-form">
-         <FormLabel className="width-12" tooltip="Set JSON body">
+         <FormLabel className="width-12" tooltip="Set body of HTTP request">
             Body
           </FormLabel>
-          <Select
-            value={request.body_format?{label:request.body_format,value:request.body_format}:{label:'none',value:'none'}}
-            placeholder="Choose..."
-            options={[{ label: 'raw-json', value: 'raw-json' },
-            { label: 'x-www-form-urlencoded', value: 'x-www-form-urlencoded' },
-          ]}
-            width={16}
-            allowCustomValue={true}
-            onChange={this.onBodyFormatChange}
-          />
         </div>}
         {request.method==='POST' && <div className="gf-form" style={{display: 'block',width: '100%' }}>
           <AceEditor
@@ -125,7 +129,7 @@ export class QueryEditor extends PureComponent<Props, State> {
             name="dashboard_script"
             height="300px"
             width="100%"
-            value={request.body_format==='raw-json'?JSON.stringify(request.body,null,2):request.body}
+            value= {request.body}
             onBlur={this.onBodyChange}
           />
         </div>}
