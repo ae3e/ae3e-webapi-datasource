@@ -10,6 +10,7 @@ import { MyQuery, MyDataSourceOptions } from './types';
 import Handlebars from 'handlebars';
 
 export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
+  /** @ngInject */
   constructor(private instanceSettings: DataSourceInstanceSettings<MyDataSourceOptions>, private templateSrv: any) {
     super(instanceSettings);
   }
