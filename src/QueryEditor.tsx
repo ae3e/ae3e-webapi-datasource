@@ -4,7 +4,7 @@ import { DataSource } from './DataSource';
 import { MyQuery, MyDataSourceOptions } from './types';
 
 import { FormField, FormLabel, Select } from '@grafana/ui';
-
+import {config} from '@grafana/runtime'
 import { QueryEditorProps } from '@grafana/data';
 
 import AceEditor from 'react-ace';
@@ -70,7 +70,8 @@ export class QueryEditor extends PureComponent<Props, State> {
   };
 
   render() {
-
+    let theme = config.theme.isDark?"tomorrow_night":"tomorrow";
+    console.log(config.theme.isDark);
     const { query } = this.props;
     let { request } = query;
     if (!request) {
@@ -109,7 +110,7 @@ export class QueryEditor extends PureComponent<Props, State> {
           </FormLabel>
           <AceEditor
             mode="javascript"
-            theme="tomorrow_night"
+            theme={theme}
             name="dashboard_script"
             height="150px"
             width="100%"
@@ -125,7 +126,7 @@ export class QueryEditor extends PureComponent<Props, State> {
         {request.method==='POST' && <div className="gf-form" style={{display: 'block',width: '100%' }}>
           <AceEditor
             mode="javascript"
-            theme="tomorrow_night"
+            theme={theme}
             name="dashboard_script"
             height="300px"
             width="100%"
@@ -139,7 +140,7 @@ export class QueryEditor extends PureComponent<Props, State> {
           </FormLabel>
           <AceEditor
             mode="javascript"
-            theme="tomorrow_night"
+            theme={theme}
             name="dashboard_script"
             height="300px"
             width="100%"

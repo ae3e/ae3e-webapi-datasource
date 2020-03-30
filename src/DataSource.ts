@@ -116,9 +116,11 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
 
       const opts = {
         method: target.request.method,
-        headers: JSON.parse(target.request.headers)
       } as any;
 
+      if(target.request.headers){
+        opts.headers = JSON.parse(target.request.headers)
+      }
       if(target.request.method==='POST'){
         console.log('QUERY:',target.request.body)
         opts.body = replaceVariables(this,target.request.body);
