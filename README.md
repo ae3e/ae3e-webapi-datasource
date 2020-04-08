@@ -1,6 +1,6 @@
 ## Web API DataSource
 
-Datasource to connect ot any web service using HTTP requests (GET or POST).
+Datasource to connect to any web service using HTTP requests (GET or POST).
 
 Data returned can be transformed using user-defined script to be compliant with Grafana.
 
@@ -45,13 +45,13 @@ The following options can be specified:
         }
     ]
     ```
-*Url* and *Body* fields can contain Grafana's variables (ie $__from) and/or Handlebars expressions (ie {{function interval function='timeUnit'}}. See below).
+*Url* and *Body* fields can contain Grafana's variables (ie `$__from`) and/or Handlebars expressions (ie `{{function interval function='timeUnit'}}`. See below).
 
 ## Settings
 
 ![Settings](/img/conf.png)
 
-Global function used by Handlebarsjs to transform specific variables before to request the data.
+Global function is used by [Handlebarsjs](https://handlebarsjs.com/) to transform specific variables before to request the data.
 It is an helper script where hash arguments can be obtained from `options` parameter and `text` is the value (see Handlebars [expressions](https://handlebarsjs.com/guide/expressions.html#helpers-with-hash-arguments)) 
 
 example:

@@ -1,6 +1,6 @@
 {
-  "name": "webapi-datasource",
-  "version": "0.0.1-dev",
+  "name": "ae3e-webapi-datasource",
+  "version": "0.1.0",
   "description": "Web API datasource",
   "scripts": {
     "build": "grafana-toolkit plugin:build",
