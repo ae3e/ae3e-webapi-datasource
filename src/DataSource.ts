@@ -1,8 +1,12 @@
 // Types
-import { DataQueryRequest, DataQueryResponse, DataSourceApi, DataSourceInstanceSettings } from '@grafana/data';
+import { DataQueryRequest, DataQueryResponse, DataSourceApi, DataSourceInstanceSettings/*, MutableDataFrame */} from '@grafana/data';
 import { MyQuery, MyDataSourceOptions } from './types';
 
+import { SystemJS } from '@grafana/runtime'
+//import { getBackendSrv } from '@grafana/runtime'
+
 import truncate from 'lodash/truncate';
+
 import Handlebars from 'handlebars';
 
 export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
@@ -18,11 +22,13 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
     return truncate(query.request.body, { length: 20 });
   }
 
-  query(options: DataQueryRequest<MyQuery>): Promise<DataQueryResponse> {
-    return this.doAllQueries(options).then(data => {
-      console.log(data);
-      return data;
-    });
+  async query(options: DataQueryRequest<MyQuery>): Promise<DataQueryResponse> {
+    let data = await this.doAllQueries(options);
+    console.log(data);
+    SystemJS.load('app/core/app_events').then((appEvents:any) => {
+      appEvents.emit('ds-request-response', {request:{},response:data})//(e:any) => console.log(e))
+    })
+    return data;
   }
 
   async doAllQueries(options: any): Promise<DataQueryResponse> {
@@ -70,7 +76,7 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
       const res = await fetch(url, opts);
       const json = await res.json();
 
-      let processed: any[] = [];
+      let processed: any;
 
       try {
         if (target.request.script && target.request.script !== '') {
@@ -83,17 +89,20 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
         console.log(e);
       }
 
-      return processed;
+      if(processed) processed.refId = target.refId;
+      return processed;//return new MutableDataFrame(processed);
     })
 
-    let results = await Promise.all(promises)
-    let data = results.map((elt: any) => elt[0]);
-    //console.log(data);
+    let data: any = await Promise.all(promises)
+    //let data = results.map((elt: any) => elt[0]);
+    console.log(data);
 
     //data===[undefined]. I don't know when it happens but sometimes it happens... so here is a fix
     if (data.length == 1 && data[0] === undefined) data = []
-
-
+    /*getBackendSrv().datasourceRequest({
+      url:'https://api.github.com/repos/grafana/grafana/stats/commit_activity',
+      method:'GET'
+    }).then((data: any) => console.log('DATA',data));*/
     return { data };
   }
 
