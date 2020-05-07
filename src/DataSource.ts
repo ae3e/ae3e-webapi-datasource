@@ -25,9 +25,6 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
   async query(options: DataQueryRequest<MyQuery>): Promise<DataQueryResponse> {
     let data = await this.doAllQueries(options);
     console.log(data);
-    SystemJS.load('app/core/app_events').then((appEvents:any) => {
-      appEvents.emit('ds-request-response', {request:{},response:data})//(e:any) => console.log(e))
-    })
     return data;
   }
 
@@ -90,19 +87,31 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
       }
 
       if(processed) processed.refId = target.refId;
-      return processed;//return new MutableDataFrame(processed);
+      opts.url = url
+      return {
+        request : opts,
+        response : json,
+        processed : processed
+      };//return new MutableDataFrame(processed);
     })
 
-    let data: any = await Promise.all(promises)
-    //let data = results.map((elt: any) => elt[0]);
+    let results: any = await Promise.all(promises)
+    let data = results.map((elt: any) => elt.processed);
     console.log(data);
 
     //data===[undefined]. I don't know when it happens but sometimes it happens... so here is a fix
     if (data.length == 1 && data[0] === undefined) data = []
+    
+
+    //Emit event ot display data in query inspector
+    let appEvents = await SystemJS.load('app/core/app_events');
+    appEvents.emit('ds-request-response', results);
+
     /*getBackendSrv().datasourceRequest({
       url:'https://api.github.com/repos/grafana/grafana/stats/commit_activity',
       method:'GET'
     }).then((data: any) => console.log('DATA',data));*/
+
     return { data };
   }
 
