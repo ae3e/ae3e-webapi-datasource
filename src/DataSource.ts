@@ -107,7 +107,12 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
     let appEvents = await SystemJS.load('app/core/app_events');
     appEvents.emit('ds-request-response', results);
 
+    //I should use getBackendSrv().datasourceRequest function but I don't know how to display the result of all the queries simultenaously in the uery inspector
     /*getBackendSrv().datasourceRequest({
+      url:'https://api.github.com/repos/facebook/react/stats/commit_activity',
+      method:'GET'
+    }).then((data: any) => console.log('DATA',data));
+    getBackendSrv().datasourceRequest({
       url:'https://api.github.com/repos/grafana/grafana/stats/commit_activity',
       method:'GET'
     }).then((data: any) => console.log('DATA',data));*/
