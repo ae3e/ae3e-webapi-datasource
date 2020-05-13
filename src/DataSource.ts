@@ -57,6 +57,7 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
 
     var promises: any = options.targets.map(async (target: any) => {
 
+      console.log(target.request.method)
       const opts = {
         method: target.request.method,
       } as any;

@@ -3,7 +3,7 @@ import React, { PureComponent, ChangeEvent } from 'react';
 import { DataSource } from './DataSource';
 import { MyQuery, MyDataSourceOptions } from './types';
 
-import { FormField, FormLabel, Select } from '@grafana/ui';
+import { Field, Label, Input, Select } from '@grafana/ui';
 import {config} from '@grafana/runtime'
 import { QueryEditorProps } from '@grafana/data';
 
@@ -85,29 +85,31 @@ export class QueryEditor extends PureComponent<Props, State> {
     }
 
     return (
-      <div className="gf-form-group">
-        <div className="gf-form"  style={{ display: 'block', width: '100%' }}>
-          <FormField label="Url" labelWidth={12} inputWidth={30} onChange={this.onUrlChange} value={request.url} placeholder="http://" />
+      <div>
+        <div style={{ width: '100%' }}>
+          <Field label="Url">
+            <Input onChange={this.onUrlChange} value={request.url} placeholder="http://"/>
+          </Field>
         </div>
-        <div className="gf-form">
-          <FormLabel className="width-12" tooltip="Choose an HTTP method.">
+        <div style={{ width: '100%' }}>
+          <Label className="width-12" description="Choose an HTTP method.">
             Method
-          </FormLabel>
+          </Label>
           <Select
             value={request.method?{label:request.method,value:request.method}:{label:'GET',value:'GET'}}
             placeholder="Choose..."
             options={[{ label: 'GET', value: 'GET' },
             { label: 'POST', value: 'POST' },
           ]}
-            width={6}
             allowCustomValue={true}
             onChange={this.onMethodChange}
           />
         </div>
-        <div className="gf-form" style={{ display: 'block', width: '100%' }}>
-          <FormLabel className="width-12" tooltip="Set headers of HTTP request">
+        <br/>
+        <div style={{ width: '100%' }}>
+          <Label className="width-12" description="Set headers of HTTP request">
             Headers
-          </FormLabel>
+          </Label>
           <AceEditor
             mode="javascript"
             theme={theme}
@@ -118,12 +120,13 @@ export class QueryEditor extends PureComponent<Props, State> {
             onBlur={this.onHeadersChange}
           />
         </div>
+        <br/>
         {request.method==='POST' && <div className="gf-form">
-         <FormLabel className="width-12" tooltip="Set body of HTTP request">
+         <Label className="width-12" description="Set body of HTTP request">
             Body
-          </FormLabel>
+          </Label>
         </div>}
-        {request.method==='POST' && <div className="gf-form" style={{display: 'block',width: '100%' }}>
+        {request.method==='POST' && <div style={{ width: '100%' }}>
           <AceEditor
             mode="javascript"
             theme={theme}
@@ -134,10 +137,11 @@ export class QueryEditor extends PureComponent<Props, State> {
             onBlur={this.onBodyChange}
           />
         </div>}
-        <div className="gf-form" style={{ display: 'block', width: '100%' }}>
-          <FormLabel className="width-12" tooltip="Set script to return formatted data as described in Grafana's documentation">
+        {request.method==='POST' && <br/>}
+        <div style={{ width: '100%'}}>
+          <Label description="Set script to return formatted data as described in Grafana's documentation">
             Script
-          </FormLabel>
+          </Label>
           <AceEditor
             mode="javascript"
             theme={theme}

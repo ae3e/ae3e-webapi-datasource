@@ -5,7 +5,7 @@ import React, { PureComponent, ChangeEvent } from 'react';
 import { MyDataSourceOptions } from './types';
 
 import { DataSourcePluginOptionsEditorProps } from '@grafana/data';
-import { FormLabel } from '@grafana/ui';
+import { Label } from '@grafana/ui';
 
 interface Props extends DataSourcePluginOptionsEditorProps<MyDataSourceOptions> {}
 
@@ -39,15 +39,13 @@ export class ConfigEditor extends PureComponent<Props, State> {
     //const { jsonData } = options;
 
     return (
-      <div className="gf-form-group">
-        <div className="gf-form">
-          <FormLabel className="width-10" tooltip="Used by Handlebars">
+      <div>
+        <Label className="width-10" description="Used by Handlebars">
             Global function
-          </FormLabel>
+          </Label>
           <textarea onBlur={this.onScriptChange} className="gf-form-input" rows={15}>
             {options.jsonData.script}
           </textarea>
-        </div>
       </div>
     );
   }
