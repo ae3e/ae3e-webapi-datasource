@@ -43,6 +43,8 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
 
     const context = {
       interval: this.templateSrv.replace('$__interval', options.scopedVars),
+      from: this.templateSrv.replace('$__from', options.scopedVars),
+      to: this.templateSrv.replace('$__to', options.scopedVars),
     } as any;
     this.templateSrv.variables.forEach((elt: any) => {
       context[elt.name] = elt.current.text;
