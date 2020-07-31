@@ -88,7 +88,7 @@ export class QueryEditor extends PureComponent<Props, State> {
       <div>
         <div style={{ width: '100%' }}>
           <Field label="Url">
-            <Input onChange={this.onUrlChange} value={request.url} placeholder="http://"/>
+            <Input css="" onChange={this.onUrlChange} value={request.url} placeholder="http://"/>
           </Field>
         </div>
         <div style={{ width: '100%' }}>
