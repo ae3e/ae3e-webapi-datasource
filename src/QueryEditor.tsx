@@ -1,7 +1,9 @@
 import React, { PureComponent, ChangeEvent } from 'react';
 
+import defaults from 'lodash/defaults';
+
 import { DataSource } from './DataSource';
-import { MyQuery, MyDataSourceOptions } from './types';
+import { MyQuery, MyDataSourceOptions, defaultQuery } from './types';
 
 import { Field, Label, Input, Select } from '@grafana/ui';
 import {config} from '@grafana/runtime'
@@ -21,74 +23,47 @@ interface State {}
 export class QueryEditor extends PureComponent<Props, State> {
   onUrlChange = (event: ChangeEvent<HTMLInputElement>) => {
     console.log('Url change!');
-    const { onChange, query } = this.props;
-    const request = {
-      ...query.request,
-      url: event.target.value,
-    };
-    onChange({ ...query, request });
+    const { onChange, query, onRunQuery } = this.props;
+    onChange({ ...query, url: event.target.value });
+    onRunQuery();
   };
 
   onMethodChange = (value: any) => {
     console.log('Method change!');
     const { onChange, query } = this.props;
-    const request = {
-      ...query.request,
-      method: value.value,
-    };
-    onChange({ ...query, request });
+    onChange({ ...query, method: value.value });
   };
 
   onHeadersChange = (evt: any, editor? : any) => {
     console.log('Headers change!');
     const { onChange, query } = this.props;
-    const request = {
-      ...query.request,
-      headers: editor.getValue(),
-    };
-    onChange({ ...query, request });
+    onChange({ ...query, headers: editor.getValue() });
   };
 
   onBodyChange = (evt: any, editor? : any) => {
     console.log('Query change!');
     const { onChange, query } = this.props;
-    const request = {
-      ...query.request,
-      body: editor.getValue(),
-    };
-    onChange({ ...query, request });
+    onChange({ ...query, body: editor.getValue() });
   }; 
 
   onScriptChange = (evt: any, editor? : any) => {
     console.log('Script change!');
     const { onChange, query } = this.props;
-    const request = {
-      ...query.request,
-      script: editor.getValue(),
-    };
-    onChange({ ...query, request });
+    onChange({ ...query, script: editor.getValue() });
   };
 
   render() {
     let theme = config.theme.isDark?"tomorrow_night":"tomorrow";
     console.log(config.theme.isDark);
-    const { query } = this.props;
-    let { request } = query;
-    if (!request) {
-      request = {
-        body: '',
-        headers:'',
-        url: '',
-        method:'',
-        script:''
-      };
-    }
+    //const { query } = this.props;
+    const query = defaults(this.props.query, defaultQuery);
+    let { url,body,headers,method,script } = query;
 
     return (
       <div>
         <div style={{ width: '100%' }}>
           <Field label="Url">
-            <Input css="" onChange={this.onUrlChange} value={request.url} placeholder="http://"/>
+            <Input css="" onChange={this.onUrlChange} value={url} placeholder="http://"/>
           </Field>
         </div>
         <div style={{ width: '100%' }}>
@@ -96,7 +71,7 @@ export class QueryEditor extends PureComponent<Props, State> {
             Method
           </Label>
           <Select
-            value={request.method?{label:request.method,value:request.method}:{label:'GET',value:'GET'}}
+            value={method?{label:method,value:method}:{label:'GET',value:'GET'}}
             placeholder="Choose..."
             options={[{ label: 'GET', value: 'GET' },
             { label: 'POST', value: 'POST' },
@@ -116,28 +91,28 @@ export class QueryEditor extends PureComponent<Props, State> {
             name="dashboard_script"
             height="150px"
             width="100%"
-            value={request.headers}
+            value={headers}
             onBlur={this.onHeadersChange}
           />
         </div>
         <br/>
-        {request.method==='POST' && <div className="gf-form">
+        {method==='POST' && <div className="gf-form">
          <Label className="width-12" description="Set body of HTTP request">
             Body
           </Label>
         </div>}
-        {request.method==='POST' && <div style={{ width: '100%' }}>
+        {method==='POST' && <div style={{ width: '100%' }}>
           <AceEditor
             mode="javascript"
             theme={theme}
             name="dashboard_script"
             height="300px"
             width="100%"
-            value= {request.body}
+            value= {body}
             onBlur={this.onBodyChange}
           />
         </div>}
-        {request.method==='POST' && <br/>}
+        {method==='POST' && <br/>}
         <div style={{ width: '100%'}}>
           <Label description="Set script to return formatted data as described in Grafana's documentation">
             Script
@@ -148,7 +123,7 @@ export class QueryEditor extends PureComponent<Props, State> {
             name="dashboard_script"
             height="300px"
             width="100%"
-            value={request.script}
+            value={script}
             onBlur={this.onScriptChange}
           />
         </div>

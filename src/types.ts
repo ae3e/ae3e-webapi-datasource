@@ -1,20 +1,3 @@
-/*import { DataQuery, DataSourceJsonData } from '@grafana/data';
-
-export interface GraphQL {
-  query: string;
-  variables?: any;
-}
-
-export interface MyQuery extends DataQuery {
-  request: GraphQL;
-  jsonata?: string;
-}
-
-
-export interface MyDataSourceOptions extends DataSourceJsonData {
-  authHeader?: string;
-}*/
-
 import { DataQuery, DataSourceJsonData } from '@grafana/data';
 
 export interface WebQuery {
@@ -27,10 +10,46 @@ export interface WebQuery {
 }
 
 export interface MyQuery extends DataQuery {
-  request: WebQuery;
-  jsonata?: string;
+  url: string;
+  method: string;
+  body: string;
+  headers:any;
+  script: string;
+  variables?: any;
 }
 
+export const defaultQuery: Partial<MyQuery> = {
+    url:'https://api.github.com/repos/grafana/grafana/stats/commit_activity',
+    method:'GET',
+    body:'',
+    headers:'',
+    script:`//Default example with GRafan's commits on Github
+    let columns = {
+        dates:[],
+        totals:[]
+    }
+    
+    data.forEach(elt=>{
+        columns.dates.push(new Date(elt.week*1000));
+        columns.totals.push(elt.total);
+    })
+    return {
+        name:"Grafana's commit",
+        fields:[
+             {
+                name:"Date",
+                type:"time",
+                values:columns.dates
+            },
+    
+            {
+                name:"Commits",
+                type:"number",
+                values:columns.totals
+            }
+        ]
+    }`
+};
 /**
  * These are options configured for each DataSource instance
  */

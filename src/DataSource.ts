@@ -1,11 +1,12 @@
 // Types
 import { DataQueryRequest, DataQueryResponse, DataSourceApi, DataSourceInstanceSettings/*, MutableDataFrame */} from '@grafana/data';
-import { MyQuery, MyDataSourceOptions } from './types';
+import { MyQuery, MyDataSourceOptions, defaultQuery } from './types';
 
 import { SystemJS } from '@grafana/runtime'
 //import { getBackendSrv } from '@grafana/runtime'
 
 import truncate from 'lodash/truncate';
+import defaults from 'lodash/defaults';
 
 import Handlebars from 'handlebars';
 
@@ -16,10 +17,10 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
   }
 
   getQueryDisplayText(query: MyQuery) {
-    if (!query.request || !query.request.body) {
+    if (!query || !query.body) {
       return 'Missing Query';
     }
-    return truncate(query.request.body, { length: 20 });
+    return truncate(query.body, { length: 20 });
   }
 
   async query(options: DataQueryRequest<MyQuery>): Promise<DataQueryResponse> {
@@ -59,19 +60,20 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
 
     var promises: any = options.targets.map(async (target: any) => {
 
-      console.log(target.request.method)
+      const query = defaults(target, defaultQuery);
+      console.log(query)
       const opts = {
-        method: target.request.method,
+        method: query.method,
       } as any;
 
-      if (target.request.headers) {
-        opts.headers = JSON.parse(target.request.headers)
+      if (query.headers) {
+        opts.headers = JSON.parse(query.headers)
       }
-      if (target.request.method === 'POST') {
-        opts.body = replaceVariables(this, target.request.body);
+      if (query.method === 'POST') {
+        opts.body = replaceVariables(this, query.body);
       }
 
-      let url = replaceVariables(this, target.request.url);
+      let url = replaceVariables(this, query.url);
 
       const res = await fetch(url, opts);
       const json = await res.json();
@@ -79,8 +81,8 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
       let processed: any;
 
       try {
-        if (target.request.script && target.request.script !== '') {
-          var f = new Function('data,variables', target.request.script);
+        if (query.script && query.script !== '') {
+          var f = new Function('data,variables', query.script);
           processed = f(json);
         } else {
           processed = json;
@@ -89,7 +91,7 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
         console.log(e);
       }
 
-      if(processed) processed.refId = target.refId;
+      if(processed) processed.refId = query.refId;
       opts.url = url
       return {
         request : opts,

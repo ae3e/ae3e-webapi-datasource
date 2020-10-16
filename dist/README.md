@@ -1,4 +1,4 @@
-## Web API DataSource
+# <img src="src/img/WebAPI.svg" width="30" style="margin-bottom:-5px"> Web API DataSource
 
 Datasource to connect to any web service using HTTP requests (GET or POST).
 
@@ -83,7 +83,7 @@ return result;
 ```
 then you can use it in *Url* or *Body* fields :
 
-`{{{function interval function='timeUnit'}}}` will be replaced by `HOURS` if *interval* value is **2w**
+`{{{function interval function='timeUnit'}}}` will be replaced by `WEEKS` if *interval* value is **2w**
 
 or
 
