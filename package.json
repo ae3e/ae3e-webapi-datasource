@@ -10,16 +10,17 @@
   "author": "ae3e",
   "license": "MIT",
   "dependencies": {
+    "@emotion/css": "^10.0.27",
     "handlebars": "^4.1.2",
-    "react-ace": "6.2.2"
+    "react-virtualized-auto-sizer": "^1.0.5"
   },
   "devDependencies": {
-    "@grafana/data": "7.2.0",
-    "@grafana/runtime": "7.2.0",
-    "@grafana/toolkit": "7.2.0",
-    "@grafana/ui": "7.2.0",
-    "@types/lodash": "^4.14.135",
-    "@babel/preset-env": "7.5.5"
+    "@babel/preset-env": "7.5.5",
+    "@grafana/data": "7.5.5",
+    "@grafana/runtime": "7.5.5",
+    "@grafana/toolkit": "7.5.5",
+    "@grafana/ui": "7.5.5",
+    "@types/lodash": "^4.14.135"
   },
   "resolutions": {
     "@babel/preset-env": "7.5.5"
