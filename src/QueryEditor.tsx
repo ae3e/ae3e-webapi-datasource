@@ -5,16 +5,9 @@ import defaults from 'lodash/defaults';
 import { DataSource } from './DataSource';
 import { MyQuery, MyDataSourceOptions, defaultQuery } from './types';
 
-import { Field, Label, Input, Select } from '@grafana/ui';
-import {config} from '@grafana/runtime'
+import { Field, Label, Input, Select,CodeEditor } from '@grafana/ui';
 import { QueryEditorProps } from '@grafana/data';
 
-import AceEditor from 'react-ace';
-
-import 'brace/mode/javascript';
-import 'brace/theme/tomorrow';
-import 'brace/theme/tomorrow_night';
-import 'brace/theme/github';
 
 type Props = QueryEditorProps<DataSource, MyQuery, MyDataSourceOptions>;
 
@@ -34,27 +27,31 @@ export class QueryEditor extends PureComponent<Props, State> {
     onChange({ ...query, method: value.value });
   };
 
-  onHeadersChange = (evt: any, editor? : any) => {
+  onHeadersChange = (headers:string) => {
     console.log('Headers change!');
-    const { onChange, query } = this.props;
-    onChange({ ...query, headers: editor.getValue() });
+    const { onChange, query, onRunQuery } = this.props;
+    onChange({ ...query, headers: headers });
+    onRunQuery();
   };
 
-  onBodyChange = (evt: any, editor? : any) => {
+  onBodyChange = (body :string) => {
     console.log('Query change!');
-    const { onChange, query } = this.props;
-    onChange({ ...query, body: editor.getValue() });
+    const { onChange, query, onRunQuery } = this.props;
+    onChange({ ...query, body: body });
+    onRunQuery();
   }; 
 
-  onScriptChange = (evt: any, editor? : any) => {
+  onScriptChange = (script : string) => {
     console.log('Script change!');
-    const { onChange, query } = this.props;
-    onChange({ ...query, script: editor.getValue() });
+    console.log(script)
+    const { onChange, query, onRunQuery } = this.props;
+    onChange({ ...query, script: script });
+    onRunQuery();
   };
 
   render() {
-    let theme = config.theme.isDark?"tomorrow_night":"tomorrow";
-    console.log(config.theme.isDark);
+    //const theme = useTheme();
+
     //const { query } = this.props;
     const query = defaults(this.props.query, defaultQuery);
     let { url,body,headers,method,script } = query;
@@ -85,15 +82,16 @@ export class QueryEditor extends PureComponent<Props, State> {
           <Label className="width-12" description="Set headers of HTTP request">
             Headers
           </Label>
-          <AceEditor
-            mode="javascript"
-            theme={theme}
-            name="dashboard_script"
-            height="150px"
-            width="100%"
+
+          <CodeEditor
+            language="json"
+            showLineNumbers={true}
             value={headers}
+            width="100%"
+            height="200px"
             onBlur={this.onHeadersChange}
           />
+
         </div>
         <br/>
         {method==='POST' && <div className="gf-form">
@@ -102,13 +100,12 @@ export class QueryEditor extends PureComponent<Props, State> {
           </Label>
         </div>}
         {method==='POST' && <div style={{ width: '100%' }}>
-          <AceEditor
-            mode="javascript"
-            theme={theme}
-            name="dashboard_script"
-            height="300px"
+        <CodeEditor
+            language="json"
+            showLineNumbers={true}
+            value={body}
             width="100%"
-            value= {body}
+            height="200px"
             onBlur={this.onBodyChange}
           />
         </div>}
@@ -117,13 +114,12 @@ export class QueryEditor extends PureComponent<Props, State> {
           <Label description="Set script to return formatted data as described in Grafana's documentation">
             Script
           </Label>
-          <AceEditor
-            mode="javascript"
-            theme={theme}
-            name="dashboard_script"
-            height="300px"
-            width="100%"
+          <CodeEditor
+            language="javascript"
+            showLineNumbers={true}
             value={script}
+            width="100%"
+            height="200px"
             onBlur={this.onScriptChange}
           />
         </div>
