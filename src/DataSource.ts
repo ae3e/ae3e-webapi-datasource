@@ -30,7 +30,7 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
   }
 
   async doAllQueries(options: any): Promise<DataQueryResponse> {
-    //console.log(options);
+    console.log(options);
 
     //If global script for Handlebars exists
     if (this.instanceSettings.jsonData.script && this.instanceSettings.jsonData.script != '') {
@@ -44,13 +44,14 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
 
     const context = {
       interval: this.templateSrv.replace('$__interval', options.scopedVars),
-      from: this.templateSrv.replace('$__from', options.scopedVars),
-      to: this.templateSrv.replace('$__to', options.scopedVars),
+      from: options.range.from.valueOf(),//this.templateSrv.replace('$__from', options.scopedVars),
+      to: options.range.to.valueOf()//this.templateSrv.replace('$__to', options.scopedVars),
     } as any;
     this.templateSrv.variables.forEach((elt: any) => {
       context[elt.name] = elt.current.text;
     })
 
+    console.log(context);
     function replaceVariables(ctxt: any, value: string) {
       const template = Handlebars.compile(value);
       let res = template(context);
