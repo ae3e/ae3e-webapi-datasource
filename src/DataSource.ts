@@ -1,8 +1,13 @@
 // Types
-import { DataQueryRequest, DataQueryResponse, DataSourceApi, DataSourceInstanceSettings/*, MutableDataFrame */} from '@grafana/data';
+import {
+  DataQueryRequest,
+  DataQueryResponse,
+  DataSourceApi,
+  DataSourceInstanceSettings /*, MutableDataFrame */,
+} from '@grafana/data';
 import { MyQuery, MyDataSourceOptions, defaultQuery } from './types';
 
-import { SystemJS } from '@grafana/runtime'
+import { SystemJS } from '@grafana/runtime';
 //import { getBackendSrv } from '@grafana/runtime'
 
 import truncate from 'lodash/truncate';
@@ -25,13 +30,10 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
 
   async query(options: DataQueryRequest<MyQuery>): Promise<DataQueryResponse> {
     let data = await this.doAllQueries(options);
-    console.log(data);
     return data;
   }
 
   async doAllQueries(options: any): Promise<DataQueryResponse> {
-    console.log(options);
-
     //If global script for Handlebars exists
     if (this.instanceSettings.jsonData.script && this.instanceSettings.jsonData.script != '') {
       let func = new Function('text,options', this.instanceSettings.jsonData.script) as any;
@@ -44,14 +46,13 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
 
     const context = {
       interval: this.templateSrv.replace('$__interval', options.scopedVars),
-      from: options.range.from.valueOf(),//this.templateSrv.replace('$__from', options.scopedVars),
-      to: options.range.to.valueOf()//this.templateSrv.replace('$__to', options.scopedVars),
+      from: options.range.from.valueOf(), //this.templateSrv.replace('$__from', options.scopedVars),
+      to: options.range.to.valueOf(), //this.templateSrv.replace('$__to', options.scopedVars),
     } as any;
     this.templateSrv.variables.forEach((elt: any) => {
       context[elt.name] = elt.current.text;
-    })
+    });
 
-    console.log(context);
     function replaceVariables(ctxt: any, value: string) {
       const template = Handlebars.compile(value);
       let res = template(context);
@@ -60,15 +61,13 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
     }
 
     var promises: any = options.targets.map(async (target: any) => {
-
       const query = defaults(target, defaultQuery);
-      console.log(query)
       const opts = {
         method: query.method,
       } as any;
 
       if (query.headers) {
-        opts.headers = JSON.parse(query.headers)
+        opts.headers = JSON.parse(query.headers);
       }
       if (query.method === 'POST') {
         opts.body = replaceVariables(this, query.body);
@@ -77,37 +76,41 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
       let url = replaceVariables(this, query.url);
 
       const res = await fetch(url, opts);
-      const json = await res.json();
+      let data = null;
+      console.log(opts);
+      if (opts.headers && opts.headers['Content-Type'] != 'application/json') {
+        data = await res.text();
+      } else {
+        data = await res.json();
+      }
 
       let processed: any;
 
       try {
         if (query.script && query.script !== '') {
           var f = new Function('data,variables', query.script);
-          processed = f(json);
+          processed = f(data);
         } else {
-          processed = json;
+          processed = data;
         }
       } catch (e) {
         console.log(e);
       }
 
-      if(processed) processed.refId = query.refId;
-      opts.url = url
+      if (processed) processed.refId = query.refId;
+      opts.url = url;
       return {
-        request : opts,
-        response : json,
-        processed : processed
-      };//return new MutableDataFrame(processed);
-    })
+        request: opts,
+        response: data,
+        processed: processed,
+      }; //return new MutableDataFrame(processed);
+    });
 
-    let results: any = await Promise.all(promises)
+    let results: any = await Promise.all(promises);
     let data = results.map((elt: any) => elt.processed);
-    console.log(data);
 
     //data===[undefined]. I don't know when it happens but sometimes it happens... so here is a fix
-    if (data.length == 1 && data[0] === undefined) data = []
-    
+    if (data.length == 1 && data[0] === undefined) data = [];
 
     //Emit event ot display data in query inspector
     let appEvents = await SystemJS.load('app/core/app_events');
